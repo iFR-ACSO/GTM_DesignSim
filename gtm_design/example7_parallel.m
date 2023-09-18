@@ -1,6 +1,9 @@
 % Demo skript for initializing and running gtm_design simulations in
 % parallel using the MWSToSimulationInput function
 % before running this script, run a setup script for the gtm
+%
+% for usable results, the callback StopFcn "MWSout=grabmws(bdroot);" has to
+% be commented out. This is done in the Property inspector in Simulink.
 
 % Parallel pool is created automatically by the parsim command if not
 % initiated beforehand by the parpool command. After 30 mins of idle time,
@@ -26,6 +29,20 @@ kts2mps = kts2fps*fps2mps;
 
 import aerootools.*
 import aerootools.pkg.*
+
+% Add mat file directory
+addpath(genpath('./config/'));
+
+% Add mfiles directories.
+addpath('./mfiles');
+
+% Add compilex code directory
+addpath('./obj');
+
+% Add libriary directory
+addpath('./libs');
+
+rehash path
 
 %% Set simulation parameters
 
@@ -68,44 +85,47 @@ end
 simout = parsim(in, 'UseFastRestart','on','ShowProgress','on');
 
 %% Call output
-% currently only final values are saved. This can easily be changed in the
-% model settings in simulink
-
-% check if the aircraft is back in a trim condition at the end of the
-% simulation without violating constraints and save the result in the fail
-% array
-
-fail = boolean(zeros(N,1));
-
-for i = 1:N   
-    
-    %Calling Output
-    Nlf_res = simout(i).Nlf_res;
-    p_res = simout(i).p_res;
-    q_res = simout(i).q_res;
-    theta_res = simout(i).theta_res;
-    bank_res = simout(i).bank_res;
-    fail_indi = simout(i).fail_indi;
-        
-    %Checking if succesfull
-
-    if fail_indi > 0    % fail_indi indicates if at any point during the simulation, the aircraft was outside of the allowed envelope
-        fail(i) = true;
-    end
-    if failCheck(Nlf_res,p_res,q_res,theta_res,bank_res)
-        fail(i) = true;
-    end
-
-end
-
-fprintf(['\nOut of ', num2str(N), ' simulations, ', num2str(sum(fail)), ' failed to go back to trim condition without violating constraints.\n']);
-
-%% function to check if the final condition is within the trim condition
-function bool = failCheck(Nlf_res,p_res,q_res,theta_res,bank_res)
-bool = false;
-
-if Nlf_res < 0.75 || Nlf_res > 1.25 || abs(p_res) > 10 || abs(q_res) > 10 || theta_res < -10 || theta_res > 20 || abs(bank_res) > 15
-    bool = true;
-end
-
-end
+% for this code to work, only the final values of the simulation should be
+% given back, a simple setting in the gtm model settings, however this is
+% not standard and I did not want to change that in fear of messing with
+% other examples. However, this part is not to important anyways. The
+% parallel part is already over.
+% 
+% % check if the aircraft is back in a trim condition at the end of the
+% % simulation without violating constraints and save the result in the fail
+% % array
+% 
+% fail = boolean(zeros(N,1));
+% 
+% for i = 1:N   
+% 
+%     %Calling Output
+%     Nlf_res = simout(i).Nlf_res;
+%     p_res = simout(i).p_res;
+%     q_res = simout(i).q_res;
+%     theta_res = simout(i).theta_res;
+%     bank_res = simout(i).bank_res;
+%     fail_indi = simout(i).fail_indi;
+% 
+%     %Checking if succesfull
+% 
+%     if fail_indi > 0    % fail_indi indicates if at any point during the simulation, the aircraft was outside of the allowed envelope
+%         fail(i) = true;
+%     end
+%     if failCheck(Nlf_res,p_res,q_res,theta_res,bank_res)
+%         fail(i) = true;
+%     end
+% 
+% end
+% 
+% fprintf(['\nOut of ', num2str(N), ' simulations, ', num2str(sum(fail)), ' failed to go back to trim condition without violating constraints.\n']);
+% 
+% %% function to check if the final condition is within the trim condition
+% function bool = failCheck(Nlf_res,p_res,q_res,theta_res,bank_res)
+% bool = false;
+% 
+% if Nlf_res < 0.75 || Nlf_res > 1.25 || abs(p_res) > 10 || abs(q_res) > 10 || theta_res < -10 || theta_res > 20 || abs(bank_res) > 15
+%     bool = true;
+% end
+% 
+% end
