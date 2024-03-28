@@ -36,8 +36,10 @@ printStates(MWS);
 loadmws(MWS,'gtm_design');
 
 %% Simulate
-[t,x,y]=sim('gtm_design',[0 100]); 
-
+%Determine the Simulation time (in Secs)
+time_of_simulation = 100;    
+[t,x,y]=sim('gtm_design',[0 time_of_simulation]); 
+intermediate = y;
 %% Convert from lat/lon to ft 
 Xeom=y(:,7:18);
 dist_lat=(Xeom(:,7)-Xeom(1,7)) * 180/pi*364100.79;
@@ -57,7 +59,7 @@ h=figure(1);,set(h,'Position',[20,20,1200,800]);clf
 
 % Alpha/Beta
 axes('position',[.1 .75 .23 .13])
-plot(t,[sout.aux.alpha,sout.aux.beta]);
+plot(t,[y(:,3),y(:,4)]); % y(:,3) ----> Alphas // y(:,4) ----> Betas
 legend({'\alpha','\beta'},'Location','SouthEast');,grid on
 xlabel('time (sec)'),
 ylabel('\alpha (deg), \beta (deg)');
@@ -65,8 +67,8 @@ title('Alpha/Beta');
 
 % Flight Path Angle and Airspeed
 axes('position',[.1 .55 .23 .13])
-[ax,h1,h2]=plotyy(t,sout.aux.gamma,t,sout.aux.eas);grid on
-xlabel('time (sec)'),
+[ax,h1,h2]=plotyy(t,y(:,5),t,y(:,1));grid on % y(:,5) ----> Gammas //
+xlabel('time (sec)'),                        % %y(:,1) ----> Airspeeds  
 ylabel(ax(1),'Flight Path,  \gamma (deg)');
 ylabel(ax(2),'Equivalent Airspeed (konts)')
 legend([h1;h2],{'\gamma','eas'},'Location','SouthEast');
@@ -81,7 +83,8 @@ title('Angular Rates');
 
 % Euler Angles
 axes('position',[.1 .15 .23 .13]);
-plot(t,[sout.eom.phi*180/pi, sout.eom.theta*180/pi, sout.eom.psi*180/pi]);
+plot(t,[y(:,16)*180/pi, y(:,17)*180/pi, y(:,18)*180/pi]);
+% y(:,16) ---> Phi  // y(:,17) ---> Theta // y(:,18) ---> Psi
 legend({'roll','pitch','yaw'},'Location','NorthEast');,grid on
 xlabel('time (sec)');
 ylabel('\phi (deg), \theta (deg), \psi (deg)');
