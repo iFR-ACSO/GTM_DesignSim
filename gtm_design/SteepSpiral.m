@@ -47,12 +47,11 @@ dist_lon=(Xeom(:,8)-Xeom(1,8)) * 180/pi*291925.24;
 alt=Xeom(:,9);
 
 %% Define simple airplane shape
-scale=1;
+scale=20;
 x1=scale*([0.0,-.5, -2.0, -3.0,-4.0, -3.25, -5.5, -6.0, -6.0]+3.0);
 y1=scale*[0.0, 0.5,  0.5, 4.25, 4.5,  0.5,   0.5,  1.5,  0.0];
-scaleSize = 30; % scale size for better visualization
-Vehicletop=scaleSize.*[ [x1,fliplr(x1)]; [y1,fliplr(-y1)]; -.01*ones(1,2*length(x1))];
-Vehiclebot=scaleSize.*[ [x1,fliplr(x1)]; [y1,fliplr(-y1)];  .01*ones(1,2*length(x1))];
+Vehicletop=[ [x1,fliplr(x1)]; [y1,fliplr(-y1)]; -.01*ones(1,2*length(x1))];
+Vehiclebot=[ [x1,fliplr(x1)]; [y1,fliplr(-y1)];  .01*ones(1,2*length(x1))];
 
 
 %% ------------------------Plots---------------------------
