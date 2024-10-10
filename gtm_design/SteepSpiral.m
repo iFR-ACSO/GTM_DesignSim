@@ -50,8 +50,9 @@ alt=Xeom(:,9);
 scale=1;
 x1=scale*([0.0,-.5, -2.0, -3.0,-4.0, -3.25, -5.5, -6.0, -6.0]+3.0);
 y1=scale*[0.0, 0.5,  0.5, 4.25, 4.5,  0.5,   0.5,  1.5,  0.0];
-Vehicletop=[ [x1,fliplr(x1)]; [y1,fliplr(-y1)]; -.01*ones(1,2*length(x1))];
-Vehiclebot=[ [x1,fliplr(x1)]; [y1,fliplr(-y1)];  .01*ones(1,2*length(x1))];
+scaleSize = 30; % scale size for better visualization
+Vehicletop=scaleSize.*[ [x1,fliplr(x1)]; [y1,fliplr(-y1)]; -.01*ones(1,2*length(x1))];
+Vehiclebot=scaleSize.*[ [x1,fliplr(x1)]; [y1,fliplr(-y1)];  .01*ones(1,2*length(x1))];
 
 
 %% ------------------------Plots---------------------------
@@ -101,19 +102,28 @@ lat_ani=interp1(t,dist_lat,tplot);
 lon_ani=interp1(t,dist_lon,tplot);
 alt_ani=interp1(t,alt,tplot);
 tic
+
+%% Animate airplane in 3D-plot
+plot3(dist_lat,dist_lon,alt);grid on
+view(25,10),axis(axset),hold off
+xlabel('Lat. Crossrange(ft)');
+ylabel('Long. Crossrange(ft)');
+zlabel('Altitude(ft)');
+title('Simulation of Steep Spiral Trajectory');
 for i=[1:length(tplot)]
-  plot3(dist_lat,dist_lon,alt);grid on
-  Offset=repmat([lat_ani(i);lon_ani(i);alt_ani(i)],1,size(Vehicletop,2));
-  Ptmp=diag([1,1,-1])*transpose(euler321(X_ani(i,10:12)))*Vehicletop + Offset;
-  patch(Ptmp(1,:),Ptmp(2,:),Ptmp(3,:),'g');
-  Ptmp=diag([1,1,-1])*transpose(euler321(X_ani(i,10:12)))*Vehiclebot + Offset;
-  patch(Ptmp(1,:),Ptmp(2,:),Ptmp(3,:),'c');
-  view(25,10),axis(axset),hold off
-  xlabel('Lat. Crossrange(ft)');
-  ylabel('Long. Crossrange(ft)');
-  zlabel('Altitude(ft)');
-  title('Simulation of Steep Spiral Trajectory');
-  pause(.1);
+    % transpose and rotate airplane mesh
+    Offset=repmat([lat_ani(i);lon_ani(i);alt_ani(i)],1,size(Vehicletop,2));
+    PtmpTop=diag([1,1,-1])*transpose(euler321(X_ani(i,10:12)))*Vehicletop + Offset;
+    PtmpBot=diag([1,1,-1])*transpose(euler321(X_ani(i,10:12)))*Vehiclebot + Offset;
+
+    % plot top and bottom
+    patchTop = patch(PtmpTop(1,:),PtmpTop(2,:),PtmpTop(3,:),'g');
+    patchBot = patch(PtmpBot(1,:),PtmpBot(2,:),PtmpBot(3,:),'c');
+    pause(.1);
+
+    % remove old patches
+    delete(patchTop);
+    delete(patchBot);
 end
 toc
 if(exist('AutoRun','var'))
